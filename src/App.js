@@ -6,7 +6,7 @@ import "./App.css";
 import { AppContext } from "./libs/contextLib";
 import Routes from "./Routes";
 import { Auth } from "aws-amplify";
-import { onError } from "/libs/errorLib";
+import { onError } from "./libs/errorLib";
 
 function App() {
   const [isAuthenticated, userHasAuthenticated] = useState(false);
