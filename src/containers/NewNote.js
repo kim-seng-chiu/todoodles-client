@@ -4,6 +4,8 @@ import { FormGroup, FormControl, ControlLabel } from "react-bootstrap";
 import LoaderButton from "../components/LoaderButton";
 import { onError } from "../libs/errorLib";
 import config from "../config";
+import { API } from "aws-amplify";
+import { s3Upload } from "../libs/awsLib";
 import "./NewNote.css";
 
 export default function NewNote() {
@@ -25,13 +27,30 @@ export default function NewNote() {
 
     if (file.current && file.current.size > config.MAX_ATTACHMENT_SIZE) {
       alert(
-        `Please pick a file smaller than ${config.MAX_ATTACHMENT_SIZE /
-          1000000} MB.`
+        `Please pick a file smaller than ${
+          config.MAX_ATTACHMENT_SIZE / 1000000
+        } MB.`
       );
       return;
     }
 
     setIsLoading(true);
+
+    try {
+      const attachment = file.current ? await s3Upload(file.current) : null;
+
+      await createNote({ content, attachment });
+      history.push("/");
+    } catch (e) {
+      onError(e);
+      setIsLoading(false);
+    }
+  }
+
+  function createNote(note) {
+    return API.post("todoodles", "/todo", {
+      body: note,
+    });
   }
 
   return (
@@ -41,7 +60,7 @@ export default function NewNote() {
           <FormControl
             value={content}
             componentClass="textarea"
-            onChange={e => setContent(e.target.value)}
+            onChange={(e) => setContent(e.target.value)}
           />
         </FormGroup>
         <FormGroup controlId="file">
